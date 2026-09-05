@@ -1,0 +1,9 @@
+.auth-context__loading {
+  min-height: 100svh;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 15px;
+}

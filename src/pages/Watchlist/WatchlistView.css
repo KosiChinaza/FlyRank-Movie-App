@@ -1,0 +1,46 @@
+.watchlist {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.watchlist__status {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  text-align: center;
+  padding: 64px 16px;
+}
+
+.watchlist__status--error {
+  color: var(--color-danger);
+}
+
+.watchlist__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .watchlist {
+    padding: 24px;
+  }
+
+  .watchlist__grid {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .watchlist {
+    padding: 20px;
+  }
+
+  .watchlist__grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+  }
+}
