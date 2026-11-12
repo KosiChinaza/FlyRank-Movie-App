@@ -89,3 +89,11 @@
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
+
+.movie-card__watchlist-button[aria-disabled='true'],
+.movie-card__watchlist-button[aria-disabled='true']:hover {
+  border-color: var(--color-surface-border);
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  cursor: progress;
+}

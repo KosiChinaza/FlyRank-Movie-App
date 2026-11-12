@@ -1,7 +1,7 @@
 import MovieCard from '../../components/MovieCard/MovieCard.jsx'
 import './HomeView.css'
 
-function HomeView({ query, movies, loading, error, watchlistError, onAddToWatchlist }) {
+function HomeView({ query, movies, loading, error, pendingIds, onAddToWatchlist }) {
   return (
     <main className="home">
       {loading && <p className="home__status">Loading movies…</p>}
@@ -21,21 +21,17 @@ function HomeView({ query, movies, loading, error, watchlistError, onAddToWatchl
       )}
 
       {!loading && !error && movies.length > 0 && (
-        <>
-          {watchlistError && (
-            <p className="home__watchlist-error" role="alert">
-              {watchlistError}
-            </p>
-          )}
-
-          <ul className="home__grid">
-            {movies.map((movie) => (
-              <li key={movie.imdbID}>
-                <MovieCard movie={movie} onAddToWatchlist={onAddToWatchlist} />
-              </li>
-            ))}
-          </ul>
-        </>
+        <ul className="home__grid">
+          {movies.map((movie) => (
+            <li key={movie.imdbID}>
+              <MovieCard
+                movie={movie}
+                onAddToWatchlist={onAddToWatchlist}
+                isPending={pendingIds.includes(movie.imdbID)}
+              />
+            </li>
+          ))}
+        </ul>
       )}
     </main>
   )

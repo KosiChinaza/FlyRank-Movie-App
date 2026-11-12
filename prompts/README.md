@@ -52,3 +52,7 @@ Each file has:
 28. [features/auth-context-provider.md](features/auth-context-provider.md) — 2026-09-05 — Create AuthContext/AuthProvider and wrap the app in main.jsx
 29. [features/routing-and-auth-guards.md](features/routing-and-auth-guards.md) — 2026-09-05 — Add /, /watchlist, /auth routes and auth-gated navigation via ViewModels
 30. [features/per-user-watchlist-and-logout.md](features/per-user-watchlist-and-logout.md) — 2026-09-05 — Move Watchlist to users/{userId}/watchlist and add Header Logout button
+31. [setup/phase-0-project-hygiene.md](setup/phase-0-project-hygiene.md) — 2026-11-12 — Capstone Phase 0: rename to CineScope, add meta description, remove unused Firestore, verify secrets, lint and build
+32. [features/watchlist-toast-notifications.md](features/watchlist-toast-notifications.md) — 2026-11-12 — Accessible toast notifications for Watchlist add/remove success and failure, with duplicate-submission protection
+33. [setup/stable-baseline-preparation.md](setup/stable-baseline-preparation.md) — 2026-11-12 — Version database rules, document Firebase setup, harden .env ignores, lint/build, review pending changes for the baseline commit
+34. [setup/database-rules-match-published.md](setup/database-rules-match-published.md) — 2026-11-12 — Align database.rules.json with the published owner-only rules (field validation removed)

@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { get, getDatabase, ref, remove, set } from 'firebase/database'
-import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,7 +16,6 @@ const firebaseApp = initializeApp(firebaseConfig)
 
 export const database = getDatabase(firebaseApp)
 export const auth = getAuth(firebaseApp)
-export const db = getFirestore(firebaseApp)
 
 /**
  * Builds a database reference to a Watchlist entry, or a user's whole

@@ -26,7 +26,7 @@ function Header({ query, setQuery, handleSearch }) {
       <div className="header__inner">
         <Link to="/" className="header__brand">
           <span className="header__brand-name">
-            FlyRank<span className="header__brand-accent">AI</span>
+            Cine<span className="header__brand-accent">Scope</span>
           </span>
           <span className="header__brand-tag">app</span>
         </Link>

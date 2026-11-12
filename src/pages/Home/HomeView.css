@@ -15,13 +15,6 @@
   color: var(--color-danger);
 }
 
-.home__watchlist-error {
-  margin: 0 0 16px;
-  color: var(--color-danger);
-  font-size: 14px;
-  text-align: center;
-}
-
 .home__grid {
   list-style: none;
   margin: 0;

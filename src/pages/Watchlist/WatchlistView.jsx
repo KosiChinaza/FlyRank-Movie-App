@@ -3,7 +3,7 @@ import MovieCard from '../../components/MovieCard/MovieCard.jsx'
 import './WatchlistView.css'
 
 function WatchlistView() {
-  const { watchlist, loading, error, removeMovie } = useWatchlistViewModel()
+  const { watchlist, loading, error, pendingIds, removeMovie } = useWatchlistViewModel()
 
   return (
     <main className="watchlist">
@@ -25,7 +25,11 @@ function WatchlistView() {
         <ul className="watchlist__grid">
           {watchlist.map((movie) => (
             <li key={movie.imdbID}>
-              <MovieCard movie={movie} onRemoveFromWatchlist={removeMovie} />
+              <MovieCard
+                movie={movie}
+                onRemoveFromWatchlist={removeMovie}
+                isPending={pendingIds.includes(movie.imdbID)}
+              />
             </li>
           ))}
         </ul>

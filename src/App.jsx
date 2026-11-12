@@ -12,7 +12,7 @@ function App() {
     movies,
     loading,
     error,
-    watchlistError,
+    pendingIds,
     handleSearch,
     handleAddToWatchlist,
   } = useHomeViewModel()
@@ -29,7 +29,7 @@ function App() {
               movies={movies}
               loading={loading}
               error={error}
-              watchlistError={watchlistError}
+              pendingIds={pendingIds}
               onAddToWatchlist={handleAddToWatchlist}
             />
           }

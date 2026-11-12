@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext.jsx'
+import { ToastContext } from '../../context/ToastContext.jsx'
 import { getMovies, initialMovies } from './HomeModel.js'
 import { saveToWatchlist } from '../Watchlist/WatchlistModel.js'
 
@@ -10,6 +11,8 @@ import { saveToWatchlist } from '../Watchlist/WatchlistModel.js'
  * random movie selection from the Home model whenever the screen mounts.
  * Also drives saving a movie to the Watchlist through the Watchlist model,
  * redirecting to /auth instead when the current user isn't authenticated.
+ * Reports the outcome of each save with a toast once Firebase confirms it,
+ * and ignores repeat saves of a movie while its save is still pending.
  *
  * @returns {{
  *   query: string,
@@ -17,19 +20,23 @@ import { saveToWatchlist } from '../Watchlist/WatchlistModel.js'
  *   movies: import('../../services/omdbMovieService.js').Movie[],
  *   loading: boolean,
  *   error: string | null,
- *   watchlistError: string | null,
+ *   pendingIds: string[],
  *   handleSearch: () => Promise<void>,
  *   handleAddToWatchlist: (movie: import('../../services/omdbMovieService.js').Movie) => Promise<void>,
  * }}
  */
 function useHomeViewModel() {
   const { user } = useContext(AuthContext)
+  const { showToast } = useContext(ToastContext)
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [watchlistError, setWatchlistError] = useState(null)
+  const [pendingIds, setPendingIds] = useState([])
+  // Tracks pending saves synchronously so a rapid double-click can't start a
+  // second save before React has re-rendered with the updated pendingIds.
+  const pendingIdsRef = useRef(new Set())
 
   useEffect(() => {
     let cancelled = false
@@ -75,17 +82,39 @@ function useHomeViewModel() {
     }
   }
 
+  function setPending(imdbID, isPending) {
+    if (isPending) {
+      pendingIdsRef.current.add(imdbID)
+    } else {
+      pendingIdsRef.current.delete(imdbID)
+    }
+    setPendingIds([...pendingIdsRef.current])
+  }
+
   async function handleAddToWatchlist(movie) {
     if (!user) {
       navigate('/auth')
       return
     }
 
+    if (pendingIdsRef.current.has(movie.imdbID)) {
+      return
+    }
+
+    const title = movie.Title || 'Movie'
+    setPending(movie.imdbID, true)
+
     try {
       await saveToWatchlist(user.uid, movie)
-      setWatchlistError(null)
+      showToast({ type: 'success', message: `Added “${title}” to your Watchlist.` })
     } catch (saveError) {
-      setWatchlistError(saveError.message)
+      console.error(saveError)
+      showToast({
+        type: 'error',
+        message: `Couldn't add “${title}” to your Watchlist. Please try again.`,
+      })
+    } finally {
+      setPending(movie.imdbID, false)
     }
   }
 
@@ -95,7 +124,7 @@ function useHomeViewModel() {
     movies,
     loading,
     error,
-    watchlistError,
+    pendingIds,
     handleSearch,
     handleAddToWatchlist,
   }

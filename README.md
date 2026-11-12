@@ -1,13 +1,13 @@
-# FlyRank AI — Movie Discovery App
+# CineScope — Movie Discovery App
 
-A movie discovery web application built with React and Vite. Visitors can browse a randomized selection of movies on load and search for titles via the OMDb API, while signed-in users can save movies to a personal Watchlist backed by Firebase.
+CineScope is a movie discovery web application created as part of the FlyRank Frontend AI Engineering program. It is built with React and Vite. Visitors can browse a randomized selection of movies on load and search for titles via the OMDb API, while signed-in users can save movies to a personal Watchlist backed by Firebase.
 
 ## Features
 
 - **Movie discovery** — on load, the Home screen displays a random set of 20 unique movies gathered from a rotating set of seed keywords via the OMDb API.
 - **Movie search** — the search input and button in the Header query OMDb and replace the displayed results with matches for the entered term.
 - **Movie cards** — each result shows its poster (with an accessible placeholder when no poster is available), title, year, and type.
-- **Watchlist** — authenticated users can add a movie to their Watchlist from a movie card on Home, view their saved Watchlist, and remove movies from it, with the list updating immediately on removal.
+- **Watchlist** — authenticated users can add a movie to their Watchlist from a movie card on Home, view their saved Watchlist, and remove movies from it, with the list updating immediately on removal. Each add or remove is confirmed by an accessible toast notification once Firebase confirms it (or an error notification if it fails), and buttons ignore repeat clicks while an operation is pending.
 - **Per-user data** — Watchlist entries are stored in Firebase Realtime Database under `users/{userId}/watchlist/{imdbID}`, isolated per account.
 - **Authentication** — email/password registration and login via Firebase Authentication, with the session restored automatically on reload and a Logout action in the Header.
 - **Route protection** — `/watchlist` redirects unauthenticated visitors to `/auth`; `/auth` redirects an already-authenticated visitor back to `/`.
@@ -18,7 +18,7 @@ A movie discovery web application built with React and Vite. Visitors can browse
 - [React](https://react.dev/) 19
 - [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/) 7
-- [Firebase](https://firebase.google.com/) — Authentication and Realtime Database (the Firestore SDK is initialized in the service layer but not currently used by any feature)
+- [Firebase](https://firebase.google.com/) — Authentication and Realtime Database
 - [OMDb API](https://www.omdbapi.com/)
 - ESLint
 
@@ -36,8 +36,8 @@ Each screen follows an MVVM (Model–View–ViewModel) structure under `src/page
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd flyrank-ai-app
+   git clone https://github.com/KosiChinaza/FlyRank-Movie-App.git
+   cd FlyRank-Movie-App
    ```
 2. Install dependencies:
    ```bash
@@ -48,14 +48,56 @@ Each screen follows an MVVM (Model–View–ViewModel) structure under `src/page
    cp .env.example .env
    ```
    `.env.example` lists the required variables: an OMDb API key and your Firebase project's configuration. Do not commit `.env` — it holds real credentials.
-4. Run the development server:
+4. Set up Firebase (see [Firebase Setup](#firebase-setup) below) and fill in the `VITE_FIREBASE_*` values.
+5. Run the development server:
    ```bash
    npm run dev
    ```
-5. Build for production:
+6. Build for production:
    ```bash
    npm run build
    ```
+
+## Firebase Setup
+
+CineScope uses two Firebase products: **Authentication** (email/password sign-in) and **Realtime Database** (per-user Watchlists). Firestore is not used.
+
+### 1. Register a web app
+
+1. In the [Firebase Console](https://console.firebase.google.com/), create or open your project.
+2. Go to **Project settings → General → Your apps** and add a **Web** app (`</>`).
+3. Copy the values from the generated `firebaseConfig` into `.env` (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`).
+
+> The Firebase web config is not a secret — it is included in the browser bundle by design. Data is protected by the Realtime Database security rules below, not by hiding the config. Never commit `.env` anyway, since it also holds the OMDb API key.
+
+### 2. Enable Authentication
+
+1. Go to **Build → Authentication** and click **Get started** if prompted.
+2. Open the **Sign-in method** tab, select **Email/Password**, enable the first toggle (Email/Password), and save. The passwordless "Email link" option is not used.
+
+### 3. Create the Realtime Database
+
+1. Go to **Build → Realtime Database** and click **Create Database**.
+2. Choose a location, then select **Start in locked mode**.
+3. Copy the database URL shown at the top of the **Data** tab (for example `https://<project-id>-default-rtdb.<region>.firebasedatabase.app`) into `VITE_FIREBASE_DATABASE_URL`. Restart `npm run dev` after editing `.env` so Vite picks up the new value.
+
+### 4. Publish the security rules
+
+The rules are versioned in [`database.rules.json`](./database.rules.json). They deny all access by default and allow a signed-in user to read and write only their own Watchlist at `users/{uid}/watchlist`, the only path the app uses. Movie-field validation is not enforced yet.
+
+To publish them:
+
+1. Go to **Build → Realtime Database → Rules**.
+2. Copy the current rules into a local file first, so you can roll back.
+3. Replace the editor contents with the contents of `database.rules.json`.
+4. Use the **Rules Playground** to confirm, before publishing, that:
+   - a signed-out read of `/users/<uid>/watchlist` is **denied**;
+   - user A reading or writing `/users/<uidA>/watchlist` is **allowed**;
+   - user B reading or writing `/users/<uidA>/watchlist` is **denied**;
+   - reading `/users` is **denied**.
+5. Click **Publish**.
+
+Whenever the rules change, update `database.rules.json` in the same commit so the repository always matches what is published.
 
 
 
@@ -122,15 +164,16 @@ The prompts used during development are documented in the [`/prompts`](./prompts
 
 ```
 src/
-├── components/       # Reusable UI components (Header, MovieCard)
-├── context/          # AuthContext — global Firebase auth state
+├── components/       # Reusable UI components (Header, MovieCard, Toast)
+├── context/          # AuthContext (Firebase auth state), ToastContext (notifications)
 ├── pages/
 │   ├── Home/         # Movie discovery screen (Model, ViewModel, View)
 │   ├── Watchlist/    # Saved movies screen (Model, ViewModel, View)
 │   └── Auth/         # Login/registration screen (Model, ViewModel, View)
 ├── services/         # External integrations: OMDb API, Firebase, auth actions
 ├── App.jsx           # Route definitions
-├── main.jsx          # App entry point and providers (AuthProvider, BrowserRouter)
+├── main.jsx          # App entry point and providers (AuthProvider, ToastProvider, BrowserRouter)
 └── index.css         # Shared design tokens (colors, radii, shadows)
 prompts/              # AI prompt log (see prompts/README.md)
+database.rules.json   # Firebase Realtime Database security rules (published via the Console)
 ```
